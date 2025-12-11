@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+YouTube Playlist Tracker
 
-## Getting Started
+Bu proje, YouTube çalma listelerini takip etmeyi kolaylaştırmak için geliştirilmiş basit bir web uygulamasıdır.
+Kullanıcı, bir YouTube çalma listesi linkini girerek listedeki tüm videoları görüntüleyebilir ve izlediklerini manuel olarak işaretleyebilir.
 
-First, run the development server:
+Uygulama otomatik olarak YouTube Data API üzerinden en güncel listeyi çeker.
+Kullanıcı “izlendi” işaretlemelerini kendi tarayıcısında kaydeder (LocalStorage), böylece sayfa yenilense bile kendi işaretlemeleri kaybolmaz.
 
-```bash
+Özellikler
+
+YouTube çalma listesi linki ile otomatik video yükleme
+
+Listedeki videoların başlık + thumbnail gösterimi
+
+Manuel “İzlendi” işaretleme
+
+İşaretlemelerin LocalStorage’da saklanması
+
+Çalma listesine yeni video eklenince uygulamanın otomatik güncellemesi
+
+API anahtarı kullanarak YouTube Data API v3 entegrasyonu
+
+Next.js 13+ App Router kullanımı
+
+Kullanım
+
+Sayfadaki input alanına bir YouTube çalma listesi linki girin.
+
+“Fetch Videos” tuşuna tıklayın.
+
+Liste yüklendiğinde her videonun yanında “İzlendi” kutusu görünür.
+
+İstediğiniz videoları işaretleyerek kendi ilerlemenizi takip edebilirsiniz.
+
+Aynı çalma listesine yeni videolar eklendiğinde tekrar “Fetch Videos” yaparak güncelleme alabilirsiniz.
+
+Geliştirme
+
+Projeyi kendi bilgisayarınızda çalıştırmak için:
+
+1. Depoyu klonlayın
+git clone https://github.com/AycaSudem/youtube-tracker.git
+cd youtube-tracker
+
+2. Bağımlılıkları yükleyin
+npm install
+
+3. Ortam dosyasını oluşturun
+
+Klasör içine .env.local adında bir dosya oluşturun ve içine şu satırı ekleyin:
+
+NEXT_PUBLIC_YT_API_KEY=YOUR_API_KEY_HERE
+
+4. Geliştirme modunda çalıştırın
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Uygulama şu adresten açılır:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+http://localhost:3000
 
-## Learn More
+Deploy
 
-To learn more about Next.js, take a look at the following resources:
+Bu proje Vercel ile kolayca deploy edilebilir.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+GitHub repo'yu bağlayın
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Vercel otomatik olarak Next.js projesini tanır
 
-## Deploy on Vercel
+Environment Variables bölümüne API key'i ekleyin
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Deploy tuşuna basın
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Kullanılan Teknolojiler
+
+Next.js
+
+React
+
+TailwindCSS
+
+YouTube Data API v3
+
+LocalStorage
+
+Lisans
+
+Bu proje açık kaynak olarak paylaşılmıştır.
+İsteyen herkes kullanabilir, geliştirebilir.
