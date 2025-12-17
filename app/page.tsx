@@ -2,35 +2,49 @@
 
 import { useEffect, useState } from "react";
 
-const API_KEY = "AIzaSyA2s8fYYhZ8KPuasdA1V_pZ1GRNgtdFjAE";
+// API key artık environment variable’dan geliyor
+const API_KEY = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
 
 export default function Home() {
+  const [playlistInput, setPlaylistInput] = useState("");
   const [playlistId, setPlaylistId] = useState("");
   const [videos, setVideos] = useState<any[]>([]);
   const [watched, setWatched] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Sayfa açıldığında kaydedilen playlistId ve watched listesi yükle
+  // Sayfa açıldığında localStorage yükle
   useEffect(() => {
     const savedId = localStorage.getItem("playlistId");
-    if (savedId) setPlaylistId(savedId);
+    if (savedId) {
+      setPlaylistId(savedId);
+      setPlaylistInput(savedId);
+    }
 
     const savedWatched = JSON.parse(localStorage.getItem("watched") || "[]");
     setWatched(savedWatched);
   }, []);
 
-  // Playlist URL'den ID ayıklama (URL veya direkt ID destekli)
-  const extractPlaylistId = (url: string) => {
+  // URL → Playlist ID çıkarma
+  const extractPlaylistId = (value: string): string => {
+    if (!value) return "";
+
+    // Direkt ID girildiyse (PL ile başlıyor)
+    if (value.startsWith("PL") || value.startsWith("UU") || value.startsWith("LL"))
+      return value;
+
+    // URL ise:
     try {
-      const u = new URL(url);
-      return u.searchParams.get("list") || url; // direkt ID de girilebilir
+      const url = new URL(value);
+      const id = url.searchParams.get("list");
+      return id || "";
     } catch {
-      return url; // direkt ID girilmişse
+      return "";
     }
   };
 
-  // Playlist input değiştiğinde state ve localStorage güncelle
-  const handlePlaylistChange = (value: string) => {
+  // Input değişince playlistId güncelle
+  const handleInput = (value: string) => {
+    setPlaylistInput(value);
     const id = extractPlaylistId(value);
     setPlaylistId(id);
     localStorage.setItem("playlistId", id);
@@ -38,44 +52,58 @@ export default function Home() {
 
   // Playlist ID değiştiğinde otomatik fetch
   useEffect(() => {
-    if (!playlistId) return;
-    fetchVideos();
+    if (playlistId) fetchVideos();
   }, [playlistId]);
 
-  // Videoları fetch et
+  // API'den videoları al
   const fetchVideos = async () => {
+    if (!API_KEY) {
+      alert("API key bulunamadı. Vercel environment'a eklemen gerekiyor.");
+      return;
+    }
+
     if (!playlistId) {
-      alert("Playlist ID veya URL girin.");
+      alert("Geçerli bir playlist URL veya ID girin.");
       return;
     }
 
     setLoading(true);
+
     try {
-      const res = await fetch(
-        `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${playlistId}&maxResults=50&key=${API_KEY}`
-      );
+      const url =
+        `https://www.googleapis.com/youtube/v3/playlistItems?` +
+        `part=snippet&playlistId=${playlistId}&maxResults=50&key=${API_KEY}`;
+
+      const res = await fetch(url);
       const data = await res.json();
 
-      if (!data.items) {
-        alert("Playlist bulunamadı veya hatalı ID.");
+      if (data.error) {
+        alert("YouTube API Hatası: " + data.error.message);
+        setVideos([]);
+        return;
+      }
+
+      if (!data.items || data.items.length === 0) {
+        alert("Playlist bulunamadı veya boş playlist.");
         setVideos([]);
         return;
       }
 
       setVideos(data.items);
-    } catch (e) {
-      alert("API hatası: " + e);
+    } catch (err) {
+      alert("Ağ hatası: " + err);
       setVideos([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Videoyu watched olarak işaretle / kaldır
+  // Watched toggle
   const toggleWatched = (id: string) => {
     const updated = watched.includes(id)
       ? watched.filter((v) => v !== id)
       : [...watched, id];
+
     setWatched(updated);
     localStorage.setItem("watched", JSON.stringify(updated));
   };
@@ -87,11 +115,12 @@ export default function Home() {
       {/* Playlist input */}
       <div className="flex gap-3 w-full max-w-xl mb-8">
         <input
-          value={playlistId}
-          onChange={(e) => handlePlaylistChange(e.target.value)}
+          value={playlistInput}
+          onChange={(e) => handleInput(e.target.value)}
           placeholder="Playlist URL veya ID girin..."
           className="flex-1 p-3 border rounded-lg bg-white shadow-sm"
         />
+
         <button
           onClick={fetchVideos}
           className="px-5 py-3 bg-black text-white rounded-lg"
@@ -105,8 +134,8 @@ export default function Home() {
 
       {/* Video listesi */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 w-full max-w-4xl">
-        {videos.map((v) => {
-          const id = v.snippet.resourceId.videoId;
+        {videos.map((video) => {
+          const id = video.snippet.resourceId.videoId;
           const isWatched = watched.includes(id);
 
           return (
@@ -117,11 +146,11 @@ export default function Home() {
               }`}
             >
               <img
-                src={v.snippet.thumbnails.medium.url}
+                src={video.snippet.thumbnails.medium.url}
                 className="rounded-md mb-3"
               />
 
-              <h2 className="font-medium mb-2">{v.snippet.title}</h2>
+              <h2 className="font-medium mb-2">{video.snippet.title}</h2>
 
               <button
                 onClick={() => toggleWatched(id)}
